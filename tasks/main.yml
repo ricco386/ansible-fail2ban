@@ -1,0 +1,38 @@
+---
+- name: Include OS-specific variables
+  include_vars: ../defaults/{{ ansible_distribution }}.yml
+  tags:
+    - fail2ban
+
+- include: epel.yml
+
+- name: Install fail2ban packages (CentOS)
+  yum: 
+    name: "{{ fail2ban_packages }}"
+    state: present
+  register: result
+  until: 'result.rc == 0'
+  retries: 5
+  delay: 10
+  when: ansible_distribution == "CentOS"
+  tags:
+    - fail2ban
+    - install
+
+- name: Create fail2ban configuration file
+  template: src=jail.local.j2
+            dest={{ fail2ban_config_dir }}/jail.local
+            owner=root
+            group=root
+            mode=0644
+  notify: restart fail2ban
+  tags: 
+    - fail2ban
+    - config
+
+- name: Start fail2ban and enable at boot (CentOS 7)
+  systemd: name={{ fail2ban_service }} enabled=yes state=started  # Only available in Ansible > 2.2
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
+  tags: 
+    - fail2ban
+    - config
