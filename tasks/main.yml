@@ -3,6 +3,7 @@
   include_vars: ../defaults/{{ ansible_distribution }}.yml
   tags:
     - fail2ban
+    - variables
 
 - include: epel.yml
 
