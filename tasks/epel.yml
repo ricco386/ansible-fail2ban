@@ -15,6 +15,7 @@
   until: 'result.rc == 0'
   retries: 5
   delay: 10
+  become: true
   when: ansible_distribution == "CentOS" and not epel_repofile_result.stat.exists
   tags:
     - fail2ban
@@ -25,6 +26,7 @@
   rpm_key:
     key: "{{ epel_repo_gpg_key_url }}"
     state: present
+  become: true
   when: ansible_distribution == "CentOS" and not epel_repofile_result.stat.exists
   ignore_errors: "{{ ansible_check_mode }}"
   tags:

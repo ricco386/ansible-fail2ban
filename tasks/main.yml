@@ -15,6 +15,7 @@
   until: 'result.rc == 0'
   retries: 5
   delay: 10
+  become: true
   when: ansible_distribution == "CentOS"
   tags:
     - fail2ban
@@ -26,6 +27,7 @@
             owner=root
             group=root
             mode=0644
+  become: true
   notify: restart fail2ban
   tags: 
     - fail2ban
@@ -33,6 +35,7 @@
 
 - name: Start fail2ban and enable at boot (CentOS 7)
   systemd: name={{ fail2ban_service }} enabled=yes state=started  # Only available in Ansible > 2.2
+  become: true
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
   tags: 
     - fail2ban
