@@ -2,6 +2,7 @@
 - name: Check if EPEL repo is already configured.
   stat: path={{ epel_repofile_path }}
   register: epel_repofile_result
+  when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
   tags:
     - fail2ban
     - install
@@ -16,7 +17,7 @@
   retries: 5
   delay: 10
   become: true
-  when: ansible_distribution == "CentOS" and not epel_repofile_result.stat.exists
+  when: not epel_repofile_result.stat.exists
   tags:
     - fail2ban
     - install
@@ -27,7 +28,7 @@
     key: "{{ epel_repo_gpg_key_url }}"
     state: present
   become: true
-  when: ansible_distribution == "CentOS" and not epel_repofile_result.stat.exists
+  when: not epel_repofile_result.stat.exists
   ignore_errors: "{{ ansible_check_mode }}"
   tags:
     - fail2ban

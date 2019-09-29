@@ -6,17 +6,43 @@
     - variables
 
 - include: epel.yml
+  when: ansible_distribution == "CentOS" or ansible_distribution == 'RedHat'
 
-- name: Install fail2ban packages (CentOS)
+- name: Install fail2ban packages via YUM. (old CentOS/RedHat/Fedora)
   yum: 
     name: "{{ fail2ban_packages }}"
     state: present
-  register: result
-  until: 'result.rc == 0'
+  register: yum-result
   retries: 5
   delay: 10
   become: true
-  when: ansible_distribution == "CentOS"
+  when: ((ansible_distribution == "CentOS" or ansible_distribution == 'RedHat') and ansible_distribution_major_version|int <= 7) or (ansible_distribution == 'Fedora' and ansible_distribution_major_version|int <= 21)
+  tags:
+    - fail2ban
+    - install
+
+- name: Install fail2ban packages via DNF. (CentOS/RedHat/Fedora)
+  dnf:
+    name: "{{ fail2ban_packages }}"
+    state: present
+  register: dnf-result
+  retries: 5
+  delay: 10
+  become: true
+  when: ((ansible_distribution == "CentOS" or ansible_distribution == 'RedHat') and ansible_distribution_major_version|int >= 8) or (ansible_distribution == 'Fedora' and ansible_distribution_major_version|int >= 22)
+  tags:
+    - fail2ban
+    - install
+
+- name: Install fail2ban packages via APT. (Debian/Ubuntu/Raspbian)
+  apt:
+    name: "{{ fail2ban_packages }}"
+    state: present
+  register: apt-result
+  retries: 5
+  delay: 10
+  become: true
+  when: ansible_os_family == 'Debian'
   tags:
     - fail2ban
     - install
@@ -33,10 +59,9 @@
     - fail2ban
     - config
 
-- name: Start fail2ban and enable at boot (CentOS 7)
+- name: Start fail2ban and enable at boot
   systemd: name={{ fail2ban_service }} enabled=yes state=started  # Only available in Ansible > 2.2
   become: true
-  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
   tags: 
     - fail2ban
     - config
