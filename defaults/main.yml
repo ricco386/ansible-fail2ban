@@ -1,8 +1,18 @@
 ---
 # defaults file for fail2ban
-#
+
+# packages to be installed
+fail2ban_packages:
+    - fail2ban
+
+# service name
+fail2ban_service: fail2ban
+
+# configuration direcotry
+fail2ban_config_dir: /etc/fail2ban
+
 # "bantime" is the number of seconds that a host is banned.
-fail2ban_bantime: 3600
+fail2ban_bantime: 7200
 
 # A host is banned if it has generated "maxretry" during the last "findtime" seconds.
 fail2ban_findtime: 600

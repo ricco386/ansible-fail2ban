@@ -2,3 +2,4 @@
 # handlers file for fail2ban
 - name: restart fail2ban
   systemd: name={{ fail2ban_service }} state=restarted
+  become: true

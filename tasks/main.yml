@@ -6,17 +6,16 @@
     - variables
 
 - include: epel.yml
-  when: ansible_distribution == "CentOS" or ansible_distribution == 'RedHat'
+  when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
 
 - name: Install fail2ban packages via YUM. (old CentOS/RedHat/Fedora)
-  yum: 
+  yum:
     name: "{{ fail2ban_packages }}"
     state: present
-  register: yum-result
   retries: 5
   delay: 10
   become: true
-  when: ((ansible_distribution == "CentOS" or ansible_distribution == 'RedHat') and ansible_distribution_major_version|int <= 7) or (ansible_distribution == 'Fedora' and ansible_distribution_major_version|int <= 21)
+  when: ((ansible_distribution == "CentOS" or ansible_distribution == "RedHat") and ansible_distribution_major_version|int <= 7) or (ansible_distribution == "Fedora" and ansible_distribution_major_version|int <= 21)
   tags:
     - fail2ban
     - install
@@ -25,11 +24,10 @@
   dnf:
     name: "{{ fail2ban_packages }}"
     state: present
-  register: dnf-result
   retries: 5
   delay: 10
   become: true
-  when: ((ansible_distribution == "CentOS" or ansible_distribution == 'RedHat') and ansible_distribution_major_version|int >= 8) or (ansible_distribution == 'Fedora' and ansible_distribution_major_version|int >= 22)
+  when: ((ansible_distribution == "CentOS" or ansible_distribution == "RedHat") and ansible_distribution_major_version|int >= 8) or (ansible_distribution == "Fedora" and ansible_distribution_major_version|int >= 22)
   tags:
     - fail2ban
     - install
@@ -38,11 +36,11 @@
   apt:
     name: "{{ fail2ban_packages }}"
     state: present
-  register: apt-result
+    install_recommends: no
   retries: 5
   delay: 10
   become: true
-  when: ansible_os_family == 'Debian'
+  when: ansible_os_family == "Debian"
   tags:
     - fail2ban
     - install
@@ -55,13 +53,27 @@
             mode=0644
   become: true
   notify: restart fail2ban
-  tags: 
+  tags:
     - fail2ban
     - config
 
 - name: Start fail2ban and enable at boot
   systemd: name={{ fail2ban_service }} enabled=yes state=started  # Only available in Ansible > 2.2
   become: true
-  tags: 
+  tags:
     - fail2ban
     - config
+
+- name: Collect all banned SSH IPs
+  shell: fail2ban-client status sshd
+  register: fail2ban_sshd_results
+  become: yes
+  tags:
+    - fail2ban
+    - results
+
+- name: Show all banned SSH IPs
+  debug: var=fail2ban_sshd_results.stdout_lines
+  tags:
+    - fail2ban
+    - results
