@@ -4,6 +4,7 @@
   tags:
     - fail2ban
     - variables
+    - install
 
 - include: epel.yml
   when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
