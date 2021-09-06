@@ -46,6 +46,19 @@
     - fail2ban
     - install
 
+- name: Copy files into config directory
+  copy: src="files/{{ item }}"
+        dest="{{ fail2ban_config_dir }}/filter.d/{{ item }}"
+        mode=0755
+        owner="{{ fail2ban_files_owner }}"
+        group="{{ fail2ban_files_group }}"
+  with_items:
+    - webexploits.conf
+  tags:
+    - fail2ban
+    - config
+    - jails
+
 - name: Create fail2ban configuration file
   template: src=jail.local.j2
             dest={{ fail2ban_config_dir }}/jail.local
@@ -75,6 +88,21 @@
 
 - name: Show all banned SSH IPs
   debug: var=fail2ban_sshd_results.stdout_lines
+  tags:
+    - fail2ban
+    - results
+
+- name: Collect all banned Webexploits IPs
+  shell: fail2ban-client status webexploits
+  register: fail2ban_webexploits_results
+  become: yes
+  when: fail2ban_webexploits_jail == True
+  tags:
+    - fail2ban
+    - results
+
+- name: Show all banned Webexploits IPs
+  debug: var=fail2ban_webexploits_results.stdout_lines
   tags:
     - fail2ban
     - results

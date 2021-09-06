@@ -16,3 +16,10 @@ mta = {{ fail2ban_mta }}
 
 [sshd]
 enabled = {{ fail2ban_sshd_jail }}
+
+[webexploits]
+enabled  = {{ fail2ban_webexploits_jail }}
+port     = http,https
+filter   = webexploits
+logpath  = %(nginx_access_log)s
+maxretry = {{ fail2ban_maxretry }}
