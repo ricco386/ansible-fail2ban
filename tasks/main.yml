@@ -7,7 +7,7 @@
     - install
 
 - include: epel.yml
-  when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+  when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat" or ansible_distribution == "Fedora"
 
 - name: Install fail2ban packages via YUM. (old CentOS/RedHat/Fedora)
   yum:

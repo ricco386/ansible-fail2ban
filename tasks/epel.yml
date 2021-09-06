@@ -1,14 +1,13 @@
 ---
-- name: Check if EPEL repo is already configured.
+- name: Check if EPEL repo is already configured (CentOS/RedHat/Fedora).
   stat: path={{ epel_repofile_path }}
   register: epel_repofile_result
-  when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
   tags:
     - fail2ban
     - install
     - epel
 
-- name: Install EPEL repo.
+- name: Install EPEL repo (CentOS/RedHat/Fedora) with YUM. (old CentOS/RedHat/Fedora)
   yum:
     name: "{{ epel_repo_url }}"
     state: present
@@ -17,13 +16,26 @@
   retries: 5
   delay: 10
   become: true
-  when: not epel_repofile_result.stat.exists
+  when: ((ansible_distribution == "CentOS" or ansible_distribution == 'RedHat') and ansible_distribution_major_version|int <= 7) or (ansible_distribution == 'Fedora' and ansible_distribution_major_version|int <= 21) and not epel_repofile_result.stat.exists
   tags:
     - fail2ban
     - install
     - epel
 
-- name: Import EPEL GPG key.
+- name: Install nginx packages with DNF. (old CentOS/RedHat/Fedora)
+  dnf:
+    name: "{{ epel_repo_url }}"
+    state: present
+  retries: 5
+  delay: 10
+  become: true
+  when: ((ansible_distribution == "CentOS" or ansible_distribution == 'RedHat') and ansible_distribution_major_version|int >= 8) or (ansible_distribution == "Fedora" and ansible_distribution_major_version|int >= 22) and not epel_repofile_result.stat.exists
+  tags:
+    - fail2ban
+    - install
+    - epel
+
+- name: Import EPEL GPG key (CentOS/RedHat/Fedora).
   rpm_key:
     key: "{{ epel_repo_gpg_key_url }}"
     state: present
