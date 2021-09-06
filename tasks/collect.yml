@@ -1,0 +1,29 @@
+---
+- name: Collect all banned SSH IPs
+  shell: fail2ban-client status sshd
+  register: fail2ban_sshd_results
+  become: yes
+  tags:
+    - fail2ban
+    - results
+
+- name: Show all banned SSH IPs
+  debug: var=fail2ban_sshd_results.stdout_lines
+  tags:
+    - fail2ban
+    - results
+
+- name: Collect all banned Webexploits IPs
+  shell: fail2ban-client status webexploits
+  register: fail2ban_webexploits_results
+  become: yes
+  when: fail2ban_webexploits_jail == True
+  tags:
+    - fail2ban
+    - results
+
+- name: Show all banned Webexploits IPs
+  debug: var=fail2ban_webexploits_results.stdout_lines
+  tags:
+    - fail2ban
+    - results

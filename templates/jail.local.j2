@@ -17,9 +17,22 @@ mta = {{ fail2ban_mta }}
 [sshd]
 enabled = {{ fail2ban_sshd_jail }}
 
+[nginx-botsearch]
+enabled = {{ fail2ban_nginx_botsearch_jail }}
+bantime = {{ fail2ban_nginx_botsearch_bantime }}
+findtime = {{ fail2ban_nginx_botsearch_findtime }}
+
 [webexploits]
 enabled  = {{ fail2ban_webexploits_jail }}
 port     = http,https
 filter   = webexploits
 logpath  = %(nginx_access_log)s
-maxretry = {{ fail2ban_maxretry }}
+
+[blacklist]
+enabled = {{ fail2ban_blacklist_jail }}
+logpath  = /var/log/fail2ban.*
+filter = blacklist
+banaction = blacklist
+bantime  = {{ fail2ban_blacklist_bantime }}
+findtime = {{ fail2ban_blacklist_findtime }}
+maxretry = {{ fail2ban_blacklist_maxretry }}

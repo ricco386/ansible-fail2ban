@@ -46,18 +46,40 @@
     - fail2ban
     - install
 
-- name: Copy files into config directory
-  copy: src="files/{{ item }}"
+- name: Copy files into filter.d directory
+  copy: src="files/filter.d/{{ item }}"
         dest="{{ fail2ban_config_dir }}/filter.d/{{ item }}"
         mode=0755
         owner="{{ fail2ban_files_owner }}"
         group="{{ fail2ban_files_group }}"
   with_items:
     - webexploits.conf
+    - blacklist.conf
   tags:
     - fail2ban
     - config
     - jails
+
+- name: Copy files into action.d directory
+  copy: src="files/action.d/{{ item }}"
+        dest="{{ fail2ban_config_dir }}/action.d/{{ item }}"
+        mode=0755
+        owner="{{ fail2ban_files_owner }}"
+        group="{{ fail2ban_files_group }}"
+  with_items:
+    - blacklist.conf
+  tags:
+    - fail2ban
+    - config
+    - jails
+
+- name: Create ip.blacklist file
+  ansible.builtin.file:
+    path: "{{ fail2ban_config_dir }}/ip.blacklist"
+    state: touch
+    mode: u+rw,g-wx,o-wx
+    modification_time: preserve
+    access_time: preserve
 
 - name: Create fail2ban configuration file
   template: src=jail.local.j2
@@ -78,31 +100,4 @@
     - fail2ban
     - config
 
-- name: Collect all banned SSH IPs
-  shell: fail2ban-client status sshd
-  register: fail2ban_sshd_results
-  become: yes
-  tags:
-    - fail2ban
-    - results
-
-- name: Show all banned SSH IPs
-  debug: var=fail2ban_sshd_results.stdout_lines
-  tags:
-    - fail2ban
-    - results
-
-- name: Collect all banned Webexploits IPs
-  shell: fail2ban-client status webexploits
-  register: fail2ban_webexploits_results
-  become: yes
-  when: fail2ban_webexploits_jail == True
-  tags:
-    - fail2ban
-    - results
-
-- name: Show all banned Webexploits IPs
-  debug: var=fail2ban_webexploits_results.stdout_lines
-  tags:
-    - fail2ban
-    - results
+- include: collect.yml
